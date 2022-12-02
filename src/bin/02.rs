@@ -1,5 +1,4 @@
 #![feature(array_chunks)]
-use std::ops::Add;
 const ROCK: u8 = b'A';
 const PAPER: u8 = b'B';
 const SCISSOR: u8 = b'C';
@@ -16,53 +15,57 @@ fn take_lines(input: &str) -> impl Iterator<Item = (u8, u8)> + '_ {
 }
 
 pub fn part_one(input: &str) -> Option<u32> {
-    take_lines(input)
+    let sum = take_lines(input)
         .map(|(opp, me)| {
+            const MY_ROCK: u8 = b'X';
+            const MY_PAPER: u8 = b'Y';
+            const MY_SCISSOR: u8 = b'Z';
+
             match (me, opp) {
-                // Draws
-                (b'X', ROCK) => 3 + _ROCK,
-                (b'Y', PAPER) => 3 + _PAPER,
-                (b'Z', SCISSOR) => 3 + _SCISSOR,
+                (MY_ROCK, PAPER) => _ROCK,
+                (MY_ROCK, ROCK) => 3 + _ROCK,
+                (MY_ROCK, SCISSOR) => 6 + _ROCK,
 
-                // Wins
-                (b'X', SCISSOR) => 6 + _ROCK,
-                (b'Y', ROCK) => 6 + _PAPER,
-                (b'Z', PAPER) => 6 + _SCISSOR,
+                (MY_PAPER, SCISSOR) => _PAPER,
+                (MY_PAPER, PAPER) => 3 + _PAPER,
+                (MY_PAPER, ROCK) => 6 + _PAPER,
 
-                // Losses
-                (b'X', PAPER) => _ROCK,
-                (b'Y', SCISSOR) => _PAPER,
-                (b'Z', ROCK) => _SCISSOR,
+                (MY_SCISSOR, SCISSOR) => 3 + _SCISSOR,
+                (MY_SCISSOR, PAPER) => 6 + _SCISSOR,
+                (MY_SCISSOR, ROCK) => _SCISSOR,
 
-                _ => unreachable!(),
+                _ => unsafe { std::hint::unreachable_unchecked() },
             }
         })
-        .reduce(Add::add)
+        .sum();
+    Some(sum)
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    take_lines(input)
+    let sum = take_lines(input)
         .map(|(opp, suggestion)| {
+            const LOSE_AGAINST: u8 = b'X';
+            const DRAW_WITH: u8 = b'Y';
+            const WIN_AGAINST: u8 = b'Z';
+
             match (suggestion, opp) {
-                // Draws
-                (b'Y', ROCK) => 3 + _ROCK,
-                (b'Y', PAPER) => 3 + _PAPER,
-                (b'Y', SCISSOR) => 3 + _SCISSOR,
+                (DRAW_WITH, ROCK) => 3 + _ROCK,
+                (DRAW_WITH, PAPER) => 3 + _PAPER,
+                (DRAW_WITH, SCISSOR) => 3 + _SCISSOR,
 
-                // Wins
-                (b'Z', SCISSOR) => 6 + _ROCK,
-                (b'Z', ROCK) => 6 + _PAPER,
-                (b'Z', PAPER) => 6 + _SCISSOR,
+                (WIN_AGAINST, SCISSOR) => 6 + _ROCK,
+                (WIN_AGAINST, ROCK) => 6 + _PAPER,
+                (WIN_AGAINST, PAPER) => 6 + _SCISSOR,
 
-                // Losses
-                (b'X', PAPER) => _ROCK,
-                (b'X', SCISSOR) => _PAPER,
-                (b'X', ROCK) => _SCISSOR,
+                (LOSE_AGAINST, PAPER) => _ROCK,
+                (LOSE_AGAINST, SCISSOR) => _PAPER,
+                (LOSE_AGAINST, ROCK) => _SCISSOR,
 
-                _ => unreachable!(),
+                _ => unsafe { std::hint::unreachable_unchecked() },
             }
         })
-        .reduce(Add::add)
+        .sum();
+    Some(sum)
 }
 
 fn main() {
