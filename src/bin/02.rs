@@ -1,5 +1,5 @@
+#![feature(array_chunks)]
 use std::ops::Add;
-
 const ROCK: u8 = b'A';
 const PAPER: u8 = b'B';
 const SCISSOR: u8 = b'C';
@@ -9,10 +9,10 @@ const _PAPER: u32 = 2;
 const _SCISSOR: u32 = 3;
 
 fn take_lines(input: &str) -> impl Iterator<Item = (u8, u8)> + '_ {
-    input.lines().map_while(|line| match line.as_bytes() {
-        [a, _, c] => Some((*a, *c)),
-        _ => None,
-    })
+    input
+        .as_bytes()
+        .array_chunks::<4>()
+        .map(|&[a, _, b, _]| (a, b))
 }
 
 pub fn part_one(input: &str) -> Option<u32> {
