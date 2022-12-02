@@ -1,98 +1,66 @@
-use std::{ops::Add, str::Lines};
+use std::ops::Add;
 
-#[repr(u8)]
-enum Rps {
-    Rock = 1,
-    Paper = 2,
-    Scissors = 3,
-}
+const ROCK: u8 = b'A';
+const PAPER: u8 = b'B';
+const SCISSOR: u8 = b'C';
 
-impl Rps {
-    pub fn result(&self, other: &Self) -> RPSResult {
-        use Rps::*;
-        match (self, other) {
-            (Rock, Rock) | (Paper, Paper) | (Scissors, Scissors) => RPSResult::Draw,
-            (Paper, Rock) | (Scissors, Paper) | (Rock, Scissors) => RPSResult::Win,
-            (Rock, Paper) | (Paper, Scissors) | (Scissors, Rock) => RPSResult::Loss,
-        }
-    }
-}
+const _ROCK: u32 = 1;
+const _PAPER: u32 = 2;
+const _SCISSOR: u32 = 3;
 
-impl From<char> for Rps {
-    fn from(value: char) -> Self {
-        use Rps::*;
-        match value {
-            'X' | 'A' => Rock,
-            'Y' | 'B' => Paper,
-            'Z' | 'C' => Scissors,
-            _ => unreachable!(),
-        }
-    }
-}
-
-#[repr(u8)]
-enum RPSResult {
-    Win = 6,
-    Draw = 3,
-    Loss = 0,
-}
-
-impl RPSResult {
-    pub fn suggest(&self, opponent: Rps) -> Rps {
-        use RPSResult::*;
-        use Rps::*;
-        match (self, opponent) {
-            (Win, Rock) | (Loss, Scissors) | (Draw, Paper) => Paper,
-            (Win, Paper) | (Loss, Rock) | (Draw, Scissors) => Scissors,
-            (Win, Scissors) | (Loss, Paper) | (Draw, Rock) => Rock,
-        }
-    }
-}
-
-impl From<char> for RPSResult {
-    fn from(value: char) -> Self {
-        use RPSResult::*;
-        match value {
-            'X' => Loss,
-            'Y' => Draw,
-            'Z' => Win,
-            _ => unreachable!(),
-        }
-    }
-}
-
-struct Input<'a>(Lines<'a>);
-
-impl Iterator for Input<'_> {
-    type Item = (char, char);
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let line = self.0.by_ref().next()?;
-        let mut chars = line.chars();
-
-        let Some(first) = chars.next() else {return None;};
-        let Some(second) = chars.nth(1) else {unreachable!()};
-
-        Some((first, second))
-    }
+fn take_lines(input: &str) -> impl Iterator<Item = (u8, u8)> + '_ {
+    input.lines().map_while(|line| match line.as_bytes() {
+        [a, _, c] => Some((*a, *c)),
+        _ => None,
+    })
 }
 
 pub fn part_one(input: &str) -> Option<u32> {
-    Input(input.lines())
+    take_lines(input)
         .map(|(opp, me)| {
-            let me: Rps = me.into();
+            match (me, opp) {
+                // Draws
+                (b'X', ROCK) => 3 + _ROCK,
+                (b'Y', PAPER) => 3 + _PAPER,
+                (b'Z', SCISSOR) => 3 + _SCISSOR,
 
-            me.result(&opp.into()) as u32 + me as u32
+                // Wins
+                (b'X', SCISSOR) => 6 + _ROCK,
+                (b'Y', ROCK) => 6 + _PAPER,
+                (b'Z', PAPER) => 6 + _SCISSOR,
+
+                // Losses
+                (b'X', PAPER) => _ROCK,
+                (b'Y', SCISSOR) => _PAPER,
+                (b'Z', ROCK) => _SCISSOR,
+
+                _ => unreachable!(),
+            }
         })
         .reduce(Add::add)
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    Input(input.lines())
+    take_lines(input)
         .map(|(opp, suggestion)| {
-            let suggestion: RPSResult = suggestion.into();
-            let me = suggestion.suggest(opp.into());
-            suggestion as u32 + me as u32
+            match (suggestion, opp) {
+                // Draws
+                (b'Y', ROCK) => 3 + _ROCK,
+                (b'Y', PAPER) => 3 + _PAPER,
+                (b'Y', SCISSOR) => 3 + _SCISSOR,
+
+                // Wins
+                (b'Z', SCISSOR) => 6 + _ROCK,
+                (b'Z', ROCK) => 6 + _PAPER,
+                (b'Z', PAPER) => 6 + _SCISSOR,
+
+                // Losses
+                (b'X', PAPER) => _ROCK,
+                (b'X', SCISSOR) => _PAPER,
+                (b'X', ROCK) => _SCISSOR,
+
+                _ => unreachable!(),
+            }
         })
         .reduce(Add::add)
 }
