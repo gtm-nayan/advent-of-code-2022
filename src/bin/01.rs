@@ -1,25 +1,21 @@
 #![feature(binary_heap_into_iter_sorted)]
-use std::{collections::BinaryHeap, ops::Add, str::Lines};
+use std::{collections::BinaryHeap, ops::Add};
 
-struct Elfs<'a>(Lines<'a>);
-
-impl Iterator for Elfs<'_> {
-    type Item = u32;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.0
-            .by_ref()
-            .map_while(|line| line.parse().ok()) // A bit of trickery, empty line will fail parsing so no need to check it separately
+pub fn calories(input: &str) -> impl Iterator<Item = u32> + '_ {
+    let mut it = input.lines();
+    std::iter::from_fn(move || {
+        it.by_ref()
+            .map_while(|line| line.parse().ok())
             .reduce(Add::add)
-    }
+    })
 }
 
 pub fn part_one(input: &str) -> Option<u32> {
-    Elfs(input.lines()).max()
+    calories(input).max()
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    Elfs(input.lines())
+    calories(input)
         .collect::<BinaryHeap<u32>>()
         .into_iter_sorted()
         .take(3)
