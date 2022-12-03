@@ -8,4 +8,5 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+chrono = { version = "0.4.23", default-features = false, features = ["std", "clock"] }
 pico-args = "0.5.0"
