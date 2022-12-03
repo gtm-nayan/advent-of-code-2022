@@ -1,66 +1,42 @@
 #![feature(iter_array_chunks)]
-use std::iter::from_fn;
-
-const N_BUCKETS: usize = 64;
-
-static BUCKETS: [bool; N_BUCKETS] = [false; N_BUCKETS];
-
-const fn get_priority(ch: usize) -> usize {
-    if ch < 26 {
-        ch + 27
-    } else {
-        ch - 31
-    }
-}
 
 fn get_bucket(ch: u8) -> usize {
-    (ch - b'A') as usize
+    1 + (ch - if ch >= b'a' { b'a' } else { b'A' - 26 }) as usize
 }
 
-fn rucksacks(input: &str) -> impl Iterator<Item = usize> + '_ {
-    let mut lines = input.lines();
-
-    from_fn(move || {
-        let line = lines.next()?.as_bytes();
-
-        let mut left = BUCKETS;
-        let mut right = BUCKETS;
-
-        let (head, tail) = line.split_at((line.len() + 1) / 2);
-
-        head.iter().zip(tail).for_each(|(&a, &b)| {
-            left[get_bucket(a)] = true;
-            right[get_bucket(b)] = true;
-        });
-
-        (0..N_BUCKETS)
-            .find(|&i| left[i] & right[i])
-            .map(get_priority)
-    })
+fn bitset(it: impl IntoIterator<Item = u8>) -> u64 {
+    it.into_iter()
+        .map(get_bucket)
+        .fold(0_u64, |acc, b| acc | (1 << b))
 }
 
 pub fn part_one(input: &str) -> Option<u32> {
-    Some(rucksacks(input).sum::<usize>() as u32)
-}
+    Some(
+        input
+            .lines()
+            .map(|line| {
+                let (head, tail) = line.as_bytes().split_at(line.len() / 2);
 
-fn rucksacks_2(input: &str) -> impl Iterator<Item = usize> + '_ {
-    let mut groups = input.lines().array_chunks::<3>();
+                let head = bitset(head.iter().copied());
+                let tail = bitset(tail.iter().copied());
 
-    from_fn(move || {
-        let [a, b, c] = groups.next()?.map(|line| {
-            let mut buf = BUCKETS;
-            line.bytes().map(get_bucket).for_each(|idx| buf[idx] = true);
-            buf
-        });
-
-        (0..N_BUCKETS)
-            .find(|&i| a[i] & b[i] & c[i])
-            .map(get_priority)
-    })
+                (head & tail).trailing_zeros()
+            })
+            .sum(),
+    )
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    Some(rucksacks_2(input).sum::<usize>() as u32)
+    Some(
+        input
+            .lines()
+            .array_chunks::<3>()
+            .map(|group| {
+                let [a, b, c] = group.map(str::bytes).map(bitset);
+                (a & b & c).trailing_zeros()
+            })
+            .sum(),
+    )
 }
 
 fn main() {
