@@ -4,19 +4,16 @@ use std::{iter::from_fn, ops::RangeInclusive};
 use memchr::memchr;
 
 fn split_and_parse(needle: u8, input: &[u8]) -> (u8, &[u8]) {
-    let loc = unsafe { memchr(needle, input).unwrap_unchecked() };
+    let (head, tail) =
+        unsafe { input.split_at_unchecked(memchr(needle, input).unwrap_unchecked() + 1) };
 
-    let (head, tail) = unsafe { input.split_at_unchecked(loc + 1) };
-
-    let head = if head.len() == 3 {
+    let parsed_head = if head.len() == 3 {
         (head[0] - b'0') * 10 + (head[1] - b'0')
-    } else if head.len() == 2 {
-        head[0] - b'0'
     } else {
-        unsafe { std::hint::unreachable_unchecked() }
+        head[0] - b'0'
     };
 
-    (head, tail)
+    (parsed_head, tail)
 }
 
 pub fn pairs(input: &str) -> impl Iterator<Item = (RangeInclusive<u8>, RangeInclusive<u8>)> + '_ {
