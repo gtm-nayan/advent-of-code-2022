@@ -47,6 +47,7 @@ fn main() {
 
     File::options()
         .write(true)
+        .create(true)
         .open(format!("./src/inputs/{day:02}.txt"))
         .unwrap()
         .write_all(&curl_output.stdout)
