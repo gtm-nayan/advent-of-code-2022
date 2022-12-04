@@ -1,13 +1,17 @@
 #![feature(iter_array_chunks)]
 
-fn get_bucket(ch: u8) -> usize {
-    1 + (ch - if ch >= b'a' { b'a' } else { b'A' - 26 }) as usize
+fn bitset(it: &[u8]) -> u64 {
+    it.iter().fold(0_u64, |acc, b| acc | (1 << (b - 64)))
 }
 
-fn bitset(it: impl IntoIterator<Item = u8>) -> u64 {
-    it.into_iter()
-        .map(get_bucket)
-        .fold(0_u64, |acc, b| acc | (1 << b))
+fn intersection_priority(bits: u64) -> u32 {
+    let n = bits.trailing_zeros() as u8 + 64;
+
+    (if n >= b'a' {
+        n - b'a' + 1
+    } else {
+        n - b'A' + 26 + 1
+    } as u32)
 }
 
 pub fn part_one(input: &str) -> Option<u32> {
@@ -17,10 +21,10 @@ pub fn part_one(input: &str) -> Option<u32> {
             .map(|line| {
                 let (head, tail) = line.as_bytes().split_at(line.len() / 2);
 
-                let head = bitset(head.iter().copied());
-                let tail = bitset(tail.iter().copied());
+                let head = bitset(head);
+                let tail = bitset(tail);
 
-                (head & tail).trailing_zeros()
+                intersection_priority(head & tail)
             })
             .sum(),
     )
@@ -32,8 +36,8 @@ pub fn part_two(input: &str) -> Option<u32> {
             .lines()
             .array_chunks::<3>()
             .map(|group| {
-                let [a, b, c] = group.map(str::bytes).map(bitset);
-                (a & b & c).trailing_zeros()
+                let [a, b, c] = group.map(str::as_bytes).map(bitset);
+                intersection_priority(a & b & c)
             })
             .sum(),
     )
