@@ -6,13 +6,11 @@ use memchr::memchr;
 fn split_and_parse(needle: u8, input: &[u8]) -> (u8, &[u8]) {
     let loc = unsafe { memchr(needle, input).unwrap_unchecked() };
 
-    let (head, mut tail) = unsafe { input.split_at_unchecked(loc) };
+    let (head, tail) = unsafe { input.split_at_unchecked(loc + 1) };
 
-    tail = unsafe { tail.split_at_unchecked(1).1 };
-
-    let head = if head.len() == 2 {
+    let head = if head.len() == 3 {
         (head[0] - b'0') * 10 + (head[1] - b'0')
-    } else if head.len() == 1 {
+    } else if head.len() == 2 {
         head[0] - b'0'
     } else {
         unsafe { std::hint::unreachable_unchecked() }
