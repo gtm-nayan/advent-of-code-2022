@@ -10,11 +10,19 @@ fn split_and_parse(needle: u8, input: &[u8]) -> (u8, &[u8]) {
 
     tail = unsafe { tail.split_at_unchecked(1).1 };
 
+    let mut first = true;
     let head = head
         .iter()
         .rev()
-        .enumerate()
-        .map(|(i, ch)| (ch - b'0') * 10_u8.pow(i as u32))
+        .map(|ch| {
+            let digit = ch - b'0';
+            if first {
+                first = false;
+                digit
+            } else {
+                digit * 10
+            }
+        })
         .sum();
 
     (head, tail)
