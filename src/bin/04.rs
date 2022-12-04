@@ -10,20 +10,13 @@ fn split_and_parse(needle: u8, input: &[u8]) -> (u8, &[u8]) {
 
     tail = unsafe { tail.split_at_unchecked(1).1 };
 
-    let mut first = true;
-    let head = head
-        .iter()
-        .rev()
-        .map(|ch| {
-            let digit = ch - b'0';
-            if first {
-                first = false;
-                digit
-            } else {
-                digit * 10
-            }
-        })
-        .sum();
+    let head = if head.len() == 2 {
+        (head[0] - b'0') * 10 + (head[1] - b'0')
+    } else if head.len() == 1 {
+        head[0] - b'0'
+    } else {
+        unsafe { std::hint::unreachable_unchecked() }
+    };
 
     (head, tail)
 }
