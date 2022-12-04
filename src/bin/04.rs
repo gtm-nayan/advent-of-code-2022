@@ -1,5 +1,5 @@
 #![feature(slice_split_at_unchecked)]
-use std::iter::from_fn;
+use std::{iter::from_fn, ops::RangeInclusive};
 
 use memchr::memchr;
 
@@ -19,7 +19,7 @@ fn split_and_parse(needle: u8, input: &[u8]) -> (u8, &[u8]) {
     (head, tail)
 }
 
-pub fn pairs(input: &str) -> impl Iterator<Item = (u8, u8, u8, u8)> + '_ {
+pub fn pairs(input: &str) -> impl Iterator<Item = (RangeInclusive<u8>, RangeInclusive<u8>)> + '_ {
     let mut slice = input.as_bytes();
 
     from_fn(move || {
@@ -34,10 +34,8 @@ pub fn pairs(input: &str) -> impl Iterator<Item = (u8, u8, u8, u8)> + '_ {
         slice = tail;
 
         Some((
-            first_elf_start,
-            first_elf_end,
-            second_elf_start,
-            second_elf_end,
+            first_elf_start..=first_elf_end,
+            second_elf_start..=second_elf_end,
         ))
     })
 }
@@ -45,7 +43,10 @@ pub fn pairs(input: &str) -> impl Iterator<Item = (u8, u8, u8, u8)> + '_ {
 pub fn part_one(input: &str) -> Option<u32> {
     Some(
         pairs(input)
-            .filter(|(a, b, c, d)| (a <= c) && (d <= b) || (c <= a) && (b <= d))
+            .filter(|(a, b)| {
+                a.contains(b.start()) & a.contains(b.end())
+                    | b.contains(a.start()) & b.contains(a.end())
+            })
             .count() as u32,
     )
 }
@@ -53,7 +54,7 @@ pub fn part_one(input: &str) -> Option<u32> {
 pub fn part_two(input: &str) -> Option<u32> {
     Some(
         pairs(input)
-            .filter(|(a, b, c, d)| a.max(c) <= b.min(d))
+            .filter(|(a, b)| a.start().max(b.start()) <= a.end().min(b.end()))
             .count() as u32,
     )
 }
