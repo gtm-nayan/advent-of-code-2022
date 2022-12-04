@@ -1,5 +1,5 @@
 #![feature(slice_split_at_unchecked)]
-use std::{iter::from_fn, str::from_utf8_unchecked};
+use std::iter::from_fn;
 
 use memchr::memchr;
 
@@ -7,8 +7,16 @@ fn split_and_parse(needle: u8, input: &[u8]) -> (u8, &[u8]) {
     let loc = unsafe { memchr(needle, input).unwrap_unchecked() };
 
     let (head, mut tail) = unsafe { input.split_at_unchecked(loc) };
-    tail = unsafe { tail.split_first().unwrap_unchecked().1 };
-    let head = unsafe { from_utf8_unchecked(head).parse::<u8>().unwrap_unchecked() };
+
+    tail = unsafe { tail.split_at_unchecked(1).1 };
+
+    let head = head
+        .iter()
+        .rev()
+        .enumerate()
+        .map(|(i, ch)| (ch - b'0') * 10_u8.pow(i as u32))
+        .sum();
+
     (head, tail)
 }
 
