@@ -14,7 +14,7 @@ impl Stacks {
             return;
         }
 
-        let Some(dest) = self.stacks.get_mut(m.to).map(|d| d as *mut Vec<char>) else { return };
+        let Some(mut dest) = self.stacks.get_mut(m.to).map(std::mem::take) else { return };
 
         let Some(source) = self.stacks.get_mut(m.from) else { return };
 
@@ -22,13 +22,14 @@ impl Stacks {
 
         let drain = source.drain(remove..);
 
-        let Some(dest) = (unsafe { dest.as_mut() }) else { return };
-
         if rev {
             dest.extend(drain.rev())
         } else {
             dest.extend(drain)
         };
+
+        // SAFETY: checked above
+        *unsafe { self.stacks.get_unchecked_mut(m.to) } = dest;
     }
 
     pub fn message(&self) -> String {
