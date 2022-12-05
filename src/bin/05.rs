@@ -28,8 +28,7 @@ impl Stacks {
             dest.extend(drain)
         };
 
-        // SAFETY: checked above
-        *unsafe { self.stacks.get_unchecked_mut(m.to) } = dest;
+        *self.stacks.get_mut(m.to).unwrap() = dest;
     }
 
     pub fn message(&self) -> String {
