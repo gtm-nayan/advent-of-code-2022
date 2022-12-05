@@ -25,7 +25,7 @@ fn main() {
     let args = match parse_args() {
         Ok(args) => args,
         Err(e) => {
-            eprintln!("Failed to process arguments: {}", e);
+            eprintln!("Failed to process arguments: {e}");
             process::exit(1);
         }
     };
