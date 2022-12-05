@@ -10,17 +10,13 @@ struct Stacks {
 
 impl Stacks {
     fn perform(&mut self, m: Move, rev: bool) {
-        if m.from == m.to || m.count == 0 {
-            return;
-        }
-
-        let Some(mut dest) = self.stacks.get_mut(m.to).map(std::mem::take) else { return };
+        let Some(dest) = self.stacks.get_mut(m.to) else { return };
+        let mut dest = std::mem::take(dest);
 
         let Some(source) = self.stacks.get_mut(m.from) else { return };
 
-        let remove = source.len() - m.count;
-
-        let drain = source.drain(remove..);
+        let remove_from = source.len() - m.count;
+        let drain = source.drain(remove_from..);
 
         if rev {
             dest.extend(drain.rev())
@@ -103,8 +99,7 @@ pub fn part_one(input: &str) -> Option<String> {
         stacks.perform(m, true);
     });
 
-    let message = stacks.message();
-    Some(message)
+    Some(stacks.message())
 }
 
 pub fn part_two(input: &str) -> Option<String> {
@@ -114,8 +109,7 @@ pub fn part_two(input: &str) -> Option<String> {
         stacks.perform(m, false);
     });
 
-    let message = stacks.message();
-    Some(message)
+    Some(stacks.message())
 }
 
 fn main() {
