@@ -1,5 +1,6 @@
 #![feature(iter_advance_by)]
 #![feature(assert_matches)]
+#![feature(get_many_mut)]
 
 use std::collections::VecDeque;
 
@@ -10,10 +11,7 @@ struct Stacks {
 
 impl Stacks {
     fn perform(&mut self, m: Move, rev: bool) {
-        let Some(dest) = self.stacks.get_mut(m.to) else { return };
-        let mut dest = std::mem::take(dest);
-
-        let Some(source) = self.stacks.get_mut(m.from) else { return };
+        let [source, dest] = self.stacks.get_many_mut([m.from, m.to]).unwrap();
 
         let remove_from = source.len() - m.count;
         let drain = source.drain(remove_from..);
@@ -23,8 +21,6 @@ impl Stacks {
         } else {
             dest.extend(drain)
         };
-
-        *self.stacks.get_mut(m.to).unwrap() = dest;
     }
 
     pub fn message(&self) -> String {
