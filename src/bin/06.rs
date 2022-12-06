@@ -1,4 +1,5 @@
 #![feature(iter_next_chunk)]
+#![feature(array_windows)]
 use std::collections::VecDeque;
 
 #[derive(Debug)]
@@ -38,23 +39,21 @@ impl Buf {
 }
 
 pub fn part_one(input: &str) -> Option<u32> {
-    let mut bytes = input.bytes();
-
-    let mut buf = Buf::new(
-        bytes
-            .by_ref()
-            .next_chunk::<4>()
-            .expect("Bad input: Not enough bytes to start"),
-    );
-
-    for (b, count) in bytes.zip(5..) {
-        buf.advance(b);
-
-        if buf.last_dup.is_none() {
-            return Some(count);
-        }
-    }
-    None
+    const N: usize = 4;
+    input
+        .as_bytes()
+        .array_windows::<N>()
+        .zip(N..)
+        .find_map(|(a, count)| {
+            for i in 1..N {
+                for j in 0..i {
+                    if a[i] == a[j] {
+                        return None;
+                    }
+                }
+            }
+            Some(count as u32)
+        })
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
